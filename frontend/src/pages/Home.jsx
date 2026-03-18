@@ -66,13 +66,27 @@ const Home = () => {
 
       {/* Footer */}
       <footer className="home-footer">
-        <div className="footer-inner">
-          <p className="footer-brand">🍴 RestaurantMS</p>
-          <p className="footer-links">
-            <Link to="/login">Sign In</Link>
-            <Link to="/register">Register</Link>
-          </p>
-          <p className="footer-copy">© {new Date().getFullYear()} RestaurantMS — Built with React & Node.js</p>
+        <div className="footer-grid">
+          {/* Brand */}
+          <div className="footer-col">
+            <h3 className="footer-brand">🍴 RestaurantMS</h3>
+            <p className="footer-tagline">A complete restaurant management solution for modern dining businesses.</p>
+          </div>
+
+          {/* Contact */}
+          <div className="footer-col">
+            <h4>Contact</h4>
+            <ul>
+              <li>📧 support@restaurantms.com</li>
+              <li>📞 +1 (555) 123-4567</li>
+              <li>📍 123 Food Street, NY</li>
+              <li>🕐 Mon–Fri, 9am–6pm</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="footer-bottom">
+          <p>© {new Date().getFullYear()} RestaurantMS. All rights reserved. Built with React & Node.js</p>
         </div>
       </footer>
 
