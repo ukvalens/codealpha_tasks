@@ -1,4 +1,4 @@
--- Create Users table
+--Create Users table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Tables table (restaurant tables)
+--Create Tables table (restaurant tables)
 CREATE TABLE IF NOT EXISTS tables (
     id SERIAL PRIMARY KEY,
     table_number INTEGER UNIQUE NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS tables (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Menu Categories table
+--Create Menu Categories table
 CREATE TABLE IF NOT EXISTS menu_categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS menu_categories (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Menu Items table
+--Create Menu Items table
 CREATE TABLE IF NOT EXISTS menu_items (
     id SERIAL PRIMARY KEY,
     category_id INTEGER REFERENCES menu_categories(id) ON DELETE CASCADE,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS menu_items (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Orders table
+--Create Orders table
 CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
     table_id INTEGER REFERENCES tables(id),
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS orders (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Order Items table
+--Create Order Items table
 CREATE TABLE IF NOT EXISTS order_items (
     id SERIAL PRIMARY KEY,
     order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS order_items (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Reservations table
+--Create Reservations table
 CREATE TABLE IF NOT EXISTS reservations (
     id SERIAL PRIMARY KEY,
     customer_name VARCHAR(100) NOT NULL,
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS reservations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create Payments table
+--Create Payments table
 CREATE TABLE IF NOT EXISTS payments (
     id SERIAL PRIMARY KEY,
     order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS payments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes for better performance
+--Create indexes for better performance
 CREATE INDEX idx_orders_table_id ON orders(table_id);
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_order_items_order_id ON order_items(order_id);
