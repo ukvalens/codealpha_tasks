@@ -2,12 +2,12 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
-  { to: '/dashboard', label: '📊 Dashboard', roles: ['admin', 'manager', 'waiter', 'chef'] },
-  { to: '/tables', label: '🪑 Tables', roles: ['admin', 'manager', 'waiter'] },
-  { to: '/menu', label: '🍽️ Menu', roles: ['admin', 'manager', 'waiter', 'chef'] },
-  { to: '/orders', label: '📋 Orders', roles: ['admin', 'manager', 'waiter', 'chef'] },
-  { to: '/reservations', label: '📅 Reservations', roles: ['admin', 'manager', 'waiter'] },
-  { to: '/payments', label: '💳 Payments', roles: ['admin', 'manager'] },
+  { to: '/app/dashboard', label: '📊 Dashboard', roles: ['admin', 'manager', 'waiter', 'chef'] },
+  { to: '/app/tables', label: '🪑 Tables', roles: ['admin', 'manager', 'waiter'] },
+  { to: '/app/menu', label: '🍽️ Menu', roles: ['admin', 'manager', 'waiter', 'chef'] },
+  { to: '/app/orders', label: '📋 Orders', roles: ['admin', 'manager', 'waiter', 'chef'] },
+  { to: '/app/reservations', label: '📅 Reservations', roles: ['admin', 'manager', 'waiter'] },
+  { to: '/app/payments', label: '💳 Payments', roles: ['admin', 'manager'] },
 ];
 
 const Sidebar = () => {
