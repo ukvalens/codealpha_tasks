@@ -24,6 +24,7 @@ import MyReservations from './pages/customer/MyReservations';
 import CustomerProfile from './pages/customer/CustomerProfile';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import MyOrders from './pages/customer/MyOrders';
+import Announcements from './pages/Announcements';
 
 const STAFF = ['admin', 'manager', 'waiter', 'chef'];
 
@@ -51,6 +52,7 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="change-password" element={<ChangePassword />} />
             <Route path="settings" element={<ProtectedRoute roles={['admin']}><Settings /></ProtectedRoute>} />
+            <Route path="announcements" element={<Announcements />} />
             <Route path="*" element={<Navigate to="/app/dashboard" />} />
           </Route>
 
@@ -62,6 +64,7 @@ function App() {
             <Route path="reserve" element={<CustomerReserve />} />
             <Route path="my-reservations" element={<MyReservations />} />
             <Route path="my-orders" element={<MyOrders />} />
+            <Route path="announcements" element={<Announcements />} />
             <Route path="profile" element={<CustomerProfile />} />
             <Route path="change-password" element={<ChangePassword />} />
             <Route path="*" element={<Navigate to="/customer/dashboard" />} />

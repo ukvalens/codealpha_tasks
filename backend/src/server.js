@@ -10,6 +10,8 @@ const tableRoutes = require('./routes/tableRoutes');
 const reservationRoutes = require('./routes/reservationRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 
+const announcementRoutes = require('./routes/announcementRoutes');
+
 const app = express();
 
 app.use(cors());
@@ -22,6 +24,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Restaurant Management System API' });

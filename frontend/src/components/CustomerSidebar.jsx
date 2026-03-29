@@ -6,6 +6,7 @@ const navItems = [
   { to: '/customer/menu', label: '🍽️ Menu' },
   { to: '/customer/reserve', label: '📅 Make Reservation' },
   { to: '/customer/my-reservations', label: '📋 My Reservations' },
+  { to: '/customer/announcements', label: '📢 Announcements' },
 ];
 
 const CustomerSidebar = () => {
