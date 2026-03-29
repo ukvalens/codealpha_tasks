@@ -13,7 +13,6 @@ const navItems = [
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
   const handleLogout = () => { logout(); navigate('/login'); };
 
   return (

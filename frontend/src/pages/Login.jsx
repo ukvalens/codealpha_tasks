@@ -13,9 +13,9 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(form.email, form.password);
+      const u = await login(form.email, form.password);
       toast.success('Welcome back!');
-      navigate('/app/dashboard');
+      navigate(u.role === 'customer' ? '/customer/menu' : '/app/dashboard');
     } catch {
       toast.error('Invalid credentials');
     } finally {

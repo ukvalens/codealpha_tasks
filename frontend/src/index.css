@@ -60,7 +60,10 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--
 /* Sidebar */
 .sidebar { width: 240px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 1.5rem 0; position: sticky; top: 0; height: 100vh; }
 .sidebar-header { padding: 0 1.5rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.sidebar-header h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+.sidebar-header h2 { font-size: 1.2rem; margin-bottom: 0.75rem; }
+.sidebar-user { display: flex; align-items: center; gap: 0.6rem; }
+.sidebar-avatar-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0; }
+.sidebar-avatar-placeholder { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
 .user-info { font-size: 0.85rem; color: rgba(255,255,255,0.7); }
 .role-badge { background: var(--primary); padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; margin-left: 4px; }
 .nav-link { display: block; padding: 0.75rem 1.5rem; color: rgba(255,255,255,0.7); text-decoration: none; transition: all 0.2s; font-size: 0.9rem; }
@@ -225,3 +228,23 @@ button { cursor: pointer; border: none; border-radius: 8px; font-size: 0.9rem; f
   .hero-content h1 { font-size: 2rem; }
   .hero { padding: 3.5rem 5%; }
 }
+
+/* ===== CUSTOMER LAYOUT ===== */
+.customer-layout { display: flex; flex-direction: column; min-height: 100vh; background: var(--bg); }
+.customer-nav { display: flex; align-items: center; gap: 1.5rem; padding: 0.9rem 5%; background: var(--sidebar-bg); position: sticky; top: 0; z-index: 100; flex-wrap: wrap; }
+.customer-nav-brand { font-size: 1.2rem; font-weight: 700; color: white; margin-right: auto; }
+.customer-nav-links { display: flex; gap: 0.25rem; }
+.cust-link { color: rgba(255,255,255,0.65); text-decoration: none; padding: 0.45rem 1rem; border-radius: 8px; font-size: 0.9rem; transition: all 0.2s; }
+.cust-link:hover, .cust-link.active { background: rgba(255,255,255,0.12); color: white; }
+.cust-logout-btn { background: rgba(220,38,38,0.25); color: #fca5a5; border: none; padding: 0.45rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.88rem; transition: background 0.2s; }
+.cust-logout-btn:hover { background: rgba(220,38,38,0.45); }
+.customer-main { flex: 1; padding: 2rem 5%; }
+.customer-page { max-width: 1100px; margin: 0 auto; }
+.customer-cat-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; color: var(--primary); border-left: 4px solid var(--primary); padding-left: 0.75rem; }
+.customer-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.customer-menu-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); transition: transform 0.2s; }
+.customer-menu-card:hover { transform: translateY(-3px); }
+.customer-menu-body { padding: 0.9rem; }
+.customer-menu-body h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
+.customer-menu-body p { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.customer-price { color: var(--primary); font-size: 1rem; }

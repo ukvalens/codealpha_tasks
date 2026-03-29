@@ -4,7 +4,7 @@ import api from '../api/axios';
 import toast from 'react-hot-toast';
 
 const Register = () => {
-  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'waiter' });
+  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'customer' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -35,6 +35,7 @@ const Register = () => {
           <input type="password" placeholder="Password" value={form.password}
             onChange={e => setForm({ ...form, password: e.target.value })} required />
           <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+            <option value="customer">Customer</option>
             <option value="waiter">Waiter</option>
             <option value="chef">Chef</option>
             <option value="manager">Manager</option>

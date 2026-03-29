@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import CustomerLayout from './components/CustomerLayout';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -16,6 +17,12 @@ import Profile from './pages/Profile';
 import ChangePassword from './pages/ChangePassword';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import CustomerMenu from './pages/customer/CustomerMenu';
+import CustomerReserve from './pages/customer/CustomerReserve';
+import MyReservations from './pages/customer/MyReservations';
+import CustomerProfile from './pages/customer/CustomerProfile';
+
+const STAFF = ['admin', 'manager', 'waiter', 'chef'];
 
 function App() {
   return (
@@ -28,7 +35,9 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+
+          {/* Staff routes */}
+          <Route path="/app" element={<ProtectedRoute roles={STAFF}><Layout /></ProtectedRoute>}>
             <Route index element={<Navigate to="/app/dashboard" />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="tables" element={<Tables />} />
@@ -39,6 +48,16 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="change-password" element={<ChangePassword />} />
             <Route path="*" element={<Navigate to="/app/dashboard" />} />
+          </Route>
+
+          {/* Customer routes */}
+          <Route path="/customer" element={<ProtectedRoute roles={['customer']}><CustomerLayout /></ProtectedRoute>}>
+            <Route index element={<Navigate to="/customer/menu" />} />
+            <Route path="menu" element={<CustomerMenu />} />
+            <Route path="reserve" element={<CustomerReserve />} />
+            <Route path="my-reservations" element={<MyReservations />} />
+            <Route path="profile" element={<CustomerProfile />} />
+            <Route path="*" element={<Navigate to="/customer/menu" />} />
           </Route>
         </Routes>
       </BrowserRouter>
