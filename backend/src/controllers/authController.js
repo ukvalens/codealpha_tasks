@@ -23,6 +23,7 @@ exports.login = async (req, res) => {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (result.rows.length === 0) return res.status(401).json({ error: 'Invalid credentials' });
     const user = result.rows[0];
+    if (user.reset_pending) return res.status(403).json({ error: 'Password reset is pending. Please check your email to reset your password before logging in.' });
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).json({ error: 'Invalid credentials' });
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
@@ -38,7 +39,8 @@ exports.forgotPassword = async (req, res) => {
     const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'No account with that email' });
 
-    const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    await pool.query('UPDATE users SET reset_pending = true WHERE id = $1', [result.rows[0].id]);
+    const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET + '_reset', { expiresIn: '1h' });
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
     const transporter = nodemailer.createTransport({
@@ -63,9 +65,9 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   const { token, password } = req.body;
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET + '_reset');
     const hashedPassword = await bcrypt.hash(password, 10);
-    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, decoded.id]);
+    await pool.query('UPDATE users SET password = $1, reset_pending = false WHERE id = $2', [hashedPassword, decoded.id]);
     res.json({ message: 'Password reset successful' });
   } catch (error) {
     res.status(400).json({ error: 'Invalid or expired token' });
