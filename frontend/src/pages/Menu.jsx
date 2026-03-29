@@ -15,6 +15,8 @@ const Menu = () => {
   const [editItem, setEditItem] = useState(null);
   const [itemForm, setItemForm] = useState({ category_id: '', name: '', description: '', price: '', image_url: '' });
   const [catForm, setCatForm] = useState({ name: '', description: '' });
+  const [catPage, setCatPage] = useState(1);
+  const CAT_PER_PAGE = 10;
   const { user } = useAuth();
   const canManage = ['admin', 'manager'].includes(user?.role);
 
@@ -181,11 +183,26 @@ const Menu = () => {
           <table className="data-table">
             <thead><tr><th>ID</th><th>Name</th><th>Description</th></tr></thead>
             <tbody>
-              {categories.map(c => (
-                <tr key={c.id}><td>{c.id}</td><td>{c.name}</td><td>{c.description}</td></tr>
-              ))}
+              {categories
+                .slice((catPage - 1) * CAT_PER_PAGE, catPage * CAT_PER_PAGE)
+                .map(c => (
+                  <tr key={c.id}><td>{c.id}</td><td>{c.name}</td><td>{c.description}</td></tr>
+                ))}
             </tbody>
           </table>
+          {categories.length > CAT_PER_PAGE && (
+            <div className="pagination">
+              <button className="page-btn" onClick={() => setCatPage(p => p - 1)} disabled={catPage === 1}>← Prev</button>
+              {Array.from({ length: Math.ceil(categories.length / CAT_PER_PAGE) }, (_, i) => (
+                <button key={i + 1} className={`page-btn ${catPage === i + 1 ? 'page-btn-active' : ''}`}
+                  onClick={() => setCatPage(i + 1)}>{i + 1}</button>
+              ))}
+              <button className="page-btn" onClick={() => setCatPage(p => p + 1)} disabled={catPage === Math.ceil(categories.length / CAT_PER_PAGE)}>Next →</button>
+            </div>
+          )}
+          <p className="menu-count" style={{ marginTop: '0.5rem' }}>
+            Showing {Math.min((catPage - 1) * CAT_PER_PAGE + 1, categories.length)}–{Math.min(catPage * CAT_PER_PAGE, categories.length)} of {categories.length} categories
+          </p>
         </div>
       )}
     </div>
