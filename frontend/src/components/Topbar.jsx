@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+const BASE_URL = 'http://localhost:5000';
+
 const Topbar = () => {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
@@ -15,7 +17,7 @@ const Topbar = () => {
   }, []);
 
   const handleLogout = () => { logout(); navigate('/login'); };
-  const initials = user?.username?.slice(0, 2).toUpperCase() || 'U';
+  const avatarSrc = user?.avatar_url ? `${BASE_URL}${user.avatar_url}` : null;
 
   return (
     <header className="topbar">
@@ -24,7 +26,10 @@ const Topbar = () => {
       </div>
       <div className="topbar-right" ref={ref}>
         <button className="avatar-btn" onClick={() => setOpen(!open)}>
-          <div className="avatar">{initials}</div>
+          {avatarSrc
+            ? <img src={avatarSrc} alt="profile" className="topbar-avatar-img" />
+            : <div className="topbar-avatar-placeholder">👤</div>
+          }
           <div className="avatar-info">
             <span className="avatar-name">{user?.username}</span>
             <span className="avatar-role">{user?.role}</span>
@@ -35,7 +40,10 @@ const Topbar = () => {
         {open && (
           <div className="profile-dropdown">
             <div className="dropdown-header">
-              <div className="avatar avatar-lg">{initials}</div>
+              {avatarSrc
+                ? <img src={avatarSrc} alt="profile" className="dropdown-avatar-img" />
+                : <div className="dropdown-avatar-placeholder">👤</div>
+              }
               <div>
                 <p className="dropdown-name">{user?.username}</p>
                 <p className="dropdown-email">{user?.email}</p>
@@ -43,16 +51,10 @@ const Topbar = () => {
               </div>
             </div>
             <hr className="dropdown-divider" />
-            <Link to="/app/profile" className="dropdown-item" onClick={() => setOpen(false)}>
-              👤 My Profile
-            </Link>
-            <Link to="/app/change-password" className="dropdown-item" onClick={() => setOpen(false)}>
-              🔒 Change Password
-            </Link>
+            <Link to="/app/profile" className="dropdown-item" onClick={() => setOpen(false)}>👤 My Profile</Link>
+            <Link to="/app/change-password" className="dropdown-item" onClick={() => setOpen(false)}>🔒 Change Password</Link>
             <hr className="dropdown-divider" />
-            <button className="dropdown-item dropdown-logout" onClick={handleLogout}>
-              🚪 Logout
-            </button>
+            <button className="dropdown-item dropdown-logout" onClick={handleLogout}>🚪 Logout</button>
           </div>
         )}
       </div>
