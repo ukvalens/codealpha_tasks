@@ -1,14 +1,25 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/axios';
 
-const features = [
-  { icon: '🪑', title: 'Table Management', desc: 'Track table availability and status in real time.' },
-  { icon: '📋', title: 'Order Tracking', desc: 'Create and track orders from pending to served.' },
-  { icon: '💳', title: 'Payments', desc: 'Process cash, card or online payments instantly.' },
-];
+const BASE_URL = 'http://localhost:5000';
+const PAGE_SIZE = 4;
 
 const Home = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const [menuItems, setMenuItems] = useState([]);
+  const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    api.get('/menu/items').then(r => {
+      setMenuItems(r.data.filter(i => i.is_available));
+    }).catch(() => {});
+  }, []);
+
+  const totalPages = Math.ceil(menuItems.length / PAGE_SIZE);
+  const pageItems = menuItems.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  const dashLink = user?.role === 'customer' ? '/customer/dashboard' : '/app/dashboard';
 
   return (
     <div className="home">
@@ -18,7 +29,7 @@ const Home = () => {
         <div className="home-nav-brand">🍴 RestaurantMS</div>
         <div className="home-nav-links">
           {token ? (
-            <Link to="/app/dashboard" className="home-nav-btn">Go to Dashboard</Link>
+            <Link to={dashLink} className="home-nav-btn">Go to Dashboard</Link>
           ) : (
             <>
               <Link to="/login" className="home-nav-btn-outline">Sign In</Link>
@@ -28,66 +39,68 @@ const Home = () => {
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="hero">
-        <div className="hero-content">
-          <span className="hero-badge">Restaurant Management System</span>
-          <h1>Run Your Restaurant<br /><span className="hero-highlight">Smarter & Faster</span></h1>
-          <p>A complete system for tables, orders, and payments all in one place.</p>
-          <div className="hero-actions">
-            {token ? (
-              <Link to="/app/dashboard" className="hero-btn-primary">Go to Dashboard →</Link>
-            ) : (
-              <>
-                <Link to="/register" className="hero-btn-primary">Get Started Free →</Link>
-                <Link to="/login" className="hero-btn-secondary">Sign In</Link>
-              </>
-            )}
-          </div>
-        </div>
-      </section>
 
-      {/* 3 Features */}
-      <section className="home-features">
-        <div className="section-header">
-          <h2>Key Features</h2>
-          <p>Everything your restaurant needs</p>
-        </div>
-        <div className="features-grid">
-          {features.map((f, i) => (
-            <div key={i} className="feature-card">
-              <div className="feature-icon">{f.icon}</div>
-              <h3>{f.title}</h3>
-              <p>{f.desc}</p>
+
+
+
+      {/* Menu Showcase */}
+      {menuItems.length > 0 && (
+        <section style={{ padding: '4rem 6%', background: 'var(--bg)' }}>
+          <div className="section-header">
+            <h2>🍽️ Our Menu Highlights</h2>
+            <p>Fresh dishes crafted with passion — explore what we offer</p>
+          </div>
+
+          <div className="menu-grid" style={{ maxWidth: 1100, margin: '0 auto' }}>
+            {pageItems.map(item => (
+              <div key={item.id} className="menu-card"
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                style={{ transition: 'transform 0.2s' }}>
+                {item.image_url
+                  ? <img src={`${BASE_URL}${item.image_url}`} alt={item.name} className="menu-img" onError={e => e.target.style.display = 'none'} />
+                  : <div style={{ height: 150, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>🍽️</div>
+                }
+                <div className="menu-card-body">
+                  <span className="menu-category">{item.category_name}</span>
+                  <h3>{item.name}</h3>
+                  <p>{item.description}</p>
+                  <div className="menu-footer">
+                    <strong>${parseFloat(item.price).toFixed(2)}</strong>
+                    <span className="badge badge-available">Available</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Dot Pagination */}
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button key={i} onClick={() => setPage(i)} style={{
+                  width: page === i ? 28 : 10, height: 10,
+                  borderRadius: 999, border: 'none', cursor: 'pointer',
+                  background: page === i ? 'var(--primary)' : 'var(--border)',
+                  transition: 'all 0.2s', padding: 0,
+                }} />
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          )}
+
+          <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+            <Link to={token ? '/customer/menu' : '/register'} className="hero-btn-primary">
+              View Full Menu →
+            </Link>
+          </div>
+        </section>
+      )}
+
+
 
       {/* Footer */}
-      <footer className="home-footer">
-        <div className="footer-grid">
-          {/* Brand */}
-          <div className="footer-col">
-            <h3 className="footer-brand">🍴 RestaurantMS</h3>
-            <p className="footer-tagline">A complete restaurant management solution for modern dining businesses.</p>
-          </div>
-
-          {/* Contact */}
-          <div className="footer-col">
-            <h4>Contact</h4>
-            <ul>
-              <li>📧support@restaurantms.com</li>
-              <li>📞 +250780468216</li>
-              <li>📍 123 Food Street, NY</li>
-              <li>🕐 Mon–Fri, 9am–6pm</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} RestaurantMS. All rights reserved. Built with React & Node.js</p>
-        </div>
+      <footer className="app-footer">
+        <p>🍴 RestaurantMS © {new Date().getFullYear()} — Built with React & Node.js</p>
       </footer>
 
     </div>
