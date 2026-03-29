@@ -60,9 +60,25 @@ exports.updateMenuItem = async (req, res) => {
   }
 };
 
+exports.uploadMenuItemImage = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const imageUrl = `/uploads/${req.file.filename}`;
+    const result = await pool.query(
+      'UPDATE menu_items SET image_url = $1 WHERE id = $2 RETURNING *',
+      [imageUrl, id]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.deleteMenuItem = async (req, res) => {
   const { id } = req.params;
   try {
+    await pool.query('UPDATE order_items SET menu_item_id = NULL WHERE menu_item_id = $1', [id]);
     await pool.query('DELETE FROM menu_items WHERE id = $1', [id]);
     res.json({ message: 'Menu item deleted' });
   } catch (error) {

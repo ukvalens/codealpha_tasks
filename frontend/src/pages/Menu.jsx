@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+
+const BASE_URL = 'http://localhost:5000';
 
 const Menu = () => {
   const [categories, setCategories] = useState([]);
@@ -19,6 +21,9 @@ const Menu = () => {
   const CAT_PER_PAGE = 5;
   const { user } = useAuth();
   const canManage = ['admin', 'manager'].includes(user?.role);
+  const [viewImage, setViewImage] = useState(null);
+  const [uploadingId, setUploadingId] = useState(null);
+  const imgInputRef = useRef();
 
   const fetchAll = async () => {
     const [cats, its] = await Promise.all([api.get('/menu/categories'), api.get('/menu/items')]);
@@ -63,6 +68,25 @@ const Menu = () => {
       toast.success('Deleted!');
       fetchAll();
     } catch { toast.error('Failed to delete'); }
+  };
+
+  const handleImageUpload = async (e, itemId) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) return toast.error('Max 2MB');
+    setUploadingId(itemId);
+    const fd = new FormData();
+    fd.append('image', file);
+    try {
+      await api.post(`/menu/items/${itemId}/image`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      toast.success('Image uploaded!');
+      fetchAll();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Upload failed');
+    } finally {
+      setUploadingId(null);
+      e.target.value = '';
+    }
   };
 
   const startEdit = (item) => {
@@ -165,8 +189,15 @@ const Menu = () => {
                     {item.is_available ? 'Available' : 'Unavailable'}
                   </span>
                 </div>
+              {item.image_url && (
+                  <button className="btn-secondary btn-sm" onClick={() => setViewImage(`${BASE_URL}${item.image_url}`)}>🖼 View Image</button>
+                )}
                 {canManage && (
                   <div className="btn-group mt-1">
+                    <label className="btn-secondary btn-sm" style={{ cursor: 'pointer', padding: '0.35rem 0.75rem', borderRadius: 8, border: '1px solid var(--border)', fontSize: '0.8rem', fontWeight: 500 }}>
+                      {uploadingId === item.id ? 'Uploading...' : '📷 Upload Image'}
+                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleImageUpload(e, item.id)} />
+                    </label>
                     <button className="btn-secondary btn-sm" onClick={() => startEdit(item)}>Edit</button>
                     <button className="btn-danger btn-sm" onClick={() => handleDelete(item.id)}>Delete</button>
                   </div>
@@ -203,6 +234,19 @@ const Menu = () => {
           <p className="menu-count" style={{ marginTop: '0.5rem' }}>
             Showing {Math.min((catPage - 1) * CAT_PER_PAGE + 1, categories.length)}–{Math.min(catPage * CAT_PER_PAGE, categories.length)} of {categories.length} categories
           </p>
+        </div>
+      )}
+      {viewImage && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setViewImage(null)}>
+          <div style={{ background: 'white', borderRadius: 12, padding: '1rem', maxWidth: '90vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 600 }}>Item Image</span>
+              <button className="btn-secondary btn-sm" onClick={() => setViewImage(null)}>✕ Close</button>
+            </div>
+            <img src={viewImage} alt="menu item" style={{ maxWidth: '70vw', maxHeight: '70vh', objectFit: 'contain', borderRadius: 8 }} onError={e => e.target.src = ''} />
+          </div>
         </div>
       )}
     </div>

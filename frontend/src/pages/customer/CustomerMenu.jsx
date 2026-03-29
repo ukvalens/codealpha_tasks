@@ -3,6 +3,8 @@ import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
+const BASE_URL = 'http://localhost:5000';
+
 const CustomerMenu = () => {
   const { user } = useAuth();
   const [categories, setCategories] = useState([]);
@@ -14,6 +16,7 @@ const CustomerMenu = () => {
   const [showCart, setShowCart] = useState(false);
   const [tableId, setTableId] = useState('');
   const [placing, setPlacing] = useState(false);
+  const [viewImage, setViewImage] = useState(null);
 
   useEffect(() => {
     api.get('/menu/categories').then(r => setCategories(r.data));
@@ -116,14 +119,32 @@ const CustomerMenu = () => {
                     ? <span className="badge badge-confirmed">In cart ×{inCart.qty}</span>
                     : <span className="badge badge-available">Available</span>}
                 </div>
-                <button className="btn-primary btn-sm mt-1" style={{ width: '100%' }} onClick={() => addToCart(item)}>
-                  + Add to Cart
-                </button>
+                <div className="btn-group mt-1">
+                  {item.image_url && (
+                    <button className="btn-secondary btn-sm" onClick={() => setViewImage(`${BASE_URL}${item.image_url}`)}>🖼 View Image</button>
+                  )}
+                  <button className="btn-primary btn-sm" style={{ flex: 1 }} onClick={() => addToCart(item)}>+ Add to Cart</button>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Image Modal */}
+      {viewImage && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setViewImage(null)}>
+          <div style={{ background: 'white', borderRadius: 12, padding: '1rem', maxWidth: '90vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 600 }}>Item Image</span>
+              <button className="btn-secondary btn-sm" onClick={() => setViewImage(null)}>✕ Close</button>
+            </div>
+            <img src={viewImage} alt="menu item" style={{ maxWidth: '70vw', maxHeight: '70vh', objectFit: 'contain', borderRadius: 8 }} />
+          </div>
+        </div>
+      )}
 
       {/* Cart Drawer */}
       {showCart && (
