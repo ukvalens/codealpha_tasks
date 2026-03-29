@@ -6,6 +6,9 @@ const Payments = () => {
   const [payments, setPayments] = useState([]);
   const [orders, setOrders] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filterMethod, setFilterMethod] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [form, setForm] = useState({ order_id: '', amount: '', payment_method: 'cash', transaction_id: '' });
 
   const fetchAll = async () => {
@@ -32,7 +35,15 @@ const Payments = () => {
     } catch (err) { toast.error(err.response?.data?.error || 'Failed'); }
   };
 
-  const totalRevenue = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+  const filtered = payments.filter(p => {
+    const matchSearch = p.order_id.toString().includes(search) ||
+      p.transaction_id?.toLowerCase().includes(search.toLowerCase());
+    const matchMethod = filterMethod ? p.payment_method === filterMethod : true;
+    const matchStatus = filterStatus ? p.payment_status === filterStatus : true;
+    return matchSearch && matchMethod && matchStatus;
+  });
+
+  const totalRevenue = filtered.reduce((sum, p) => sum + parseFloat(p.amount), 0);
 
   return (
     <div className="page">
@@ -44,7 +55,7 @@ const Payments = () => {
       <div className="stat-card" style={{ borderLeft: '4px solid #059669', marginBottom: '1.5rem' }}>
         <div className="stat-icon">💰</div>
         <div>
-          <p className="stat-label">Total Revenue</p>
+          <p className="stat-label">Total Revenue {(filterMethod || filterStatus || search) ? '(filtered)' : ''}</p>
           <h3 className="stat-value">${totalRevenue.toFixed(2)}</h3>
         </div>
       </div>
@@ -70,12 +81,32 @@ const Payments = () => {
       )}
 
       <div className="card">
+        <div className="menu-filters" style={{ marginBottom: '1rem' }}>
+          <input placeholder="🔍 Search by order ID or transaction ID..." value={search}
+            onChange={e => setSearch(e.target.value)} className="menu-search" />
+          <select value={filterMethod} onChange={e => setFilterMethod(e.target.value)}>
+            <option value="">All Methods</option>
+            <option value="cash">Cash</option>
+            <option value="card">Card</option>
+            <option value="online">Online</option>
+          </select>
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+            <option value="">All Status</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
+          </select>
+          {(search || filterMethod || filterStatus) && (
+            <button className="btn-secondary btn-sm" onClick={() => { setSearch(''); setFilterMethod(''); setFilterStatus(''); }}>✕ Clear</button>
+          )}
+        </div>
+        <p className="menu-count">{filtered.length} payment{filtered.length !== 1 ? 's' : ''} found</p>
         <table className="data-table">
           <thead>
             <tr><th>ID</th><th>Order</th><th>Amount</th><th>Method</th><th>Status</th><th>Transaction ID</th><th>Date</th></tr>
           </thead>
           <tbody>
-            {payments.map(p => (
+            {filtered.map(p => (
               <tr key={p.id}>
                 <td>#{p.id}</td>
                 <td>Order #{p.order_id}</td>

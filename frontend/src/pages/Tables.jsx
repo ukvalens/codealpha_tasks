@@ -7,6 +7,8 @@ const Tables = () => {
   const [tables, setTables] = useState([]);
   const [form, setForm] = useState({ table_number: '', capacity: '' });
   const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const { user } = useAuth();
   const canManage = ['admin', 'manager'].includes(user?.role);
 
@@ -25,9 +27,7 @@ const Tables = () => {
       setForm({ table_number: '', capacity: '' });
       setShowForm(false);
       fetchTables();
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to create table');
-    }
+    } catch (err) { toast.error(err.response?.data?.error || 'Failed to create table'); }
   };
 
   const updateStatus = async (id, status) => {
@@ -35,12 +35,16 @@ const Tables = () => {
       await api.put(`/tables/${id}/status`, { status });
       toast.success('Status updated!');
       fetchTables();
-    } catch {
-      toast.error('Failed to update status');
-    }
+    } catch { toast.error('Failed to update status'); }
   };
 
   const statusColor = { available: '#059669', occupied: '#dc2626', reserved: '#d97706' };
+
+  const filtered = tables.filter(t => {
+    const matchSearch = t.table_number.toString().includes(search) || t.capacity.toString().includes(search);
+    const matchStatus = filterStatus ? t.status === filterStatus : true;
+    return matchSearch && matchStatus;
+  });
 
   return (
     <div className="page">
@@ -62,8 +66,23 @@ const Tables = () => {
         </div>
       )}
 
+      <div className="menu-filters">
+        <input placeholder="🔍 Search by table number or capacity..." value={search}
+          onChange={e => setSearch(e.target.value)} className="menu-search" />
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+          <option value="">All Status</option>
+          <option value="available">Available</option>
+          <option value="occupied">Occupied</option>
+          <option value="reserved">Reserved</option>
+        </select>
+        {(search || filterStatus) && (
+          <button className="btn-secondary btn-sm" onClick={() => { setSearch(''); setFilterStatus(''); }}>✕ Clear</button>
+        )}
+      </div>
+      <p className="menu-count">{filtered.length} table{filtered.length !== 1 ? 's' : ''} found</p>
+
       <div className="tables-grid">
-        {tables.map(t => (
+        {filtered.map(t => (
           <div key={t.id} className="table-card" style={{ borderTop: `4px solid ${statusColor[t.status]}` }}>
             <h3>Table {t.table_number}</h3>
             <p>Capacity: {t.capacity}</p>

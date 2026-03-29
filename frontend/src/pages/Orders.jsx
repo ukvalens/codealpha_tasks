@@ -8,6 +8,8 @@ const Orders = () => {
   const [tables, setTables] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [form, setForm] = useState({ table_id: '', items: [{ menu_item_id: '', quantity: 1, price: '', special_instructions: '' }] });
   const { user } = useAuth();
 
@@ -60,6 +62,14 @@ const Orders = () => {
 
   const statuses = ['pending', 'preparing', 'ready', 'served', 'completed', 'cancelled'];
 
+  const filtered = orders.filter(o => {
+    const matchSearch = o.id.toString().includes(search) ||
+      o.table_number?.toString().includes(search) ||
+      o.waiter_name?.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = filterStatus ? o.status === filterStatus : true;
+    return matchSearch && matchStatus;
+  });
+
   return (
     <div className="page">
       <div className="page-header">
@@ -100,12 +110,24 @@ const Orders = () => {
       )}
 
       <div className="card">
+        <div className="menu-filters" style={{ marginBottom: '1rem' }}>
+          <input placeholder="🔍 Search by order ID, table or waiter..." value={search}
+            onChange={e => setSearch(e.target.value)} className="menu-search" />
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+            <option value="">All Status</option>
+            {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          {(search || filterStatus) && (
+            <button className="btn-secondary btn-sm" onClick={() => { setSearch(''); setFilterStatus(''); }}>✕ Clear</button>
+          )}
+        </div>
+        <p className="menu-count">{filtered.length} order{filtered.length !== 1 ? 's' : ''} found</p>
         <table className="data-table">
           <thead>
             <tr><th>ID</th><th>Table</th><th>Waiter</th><th>Amount</th><th>Status</th><th>Update Status</th></tr>
           </thead>
           <tbody>
-            {orders.map(o => (
+            {filtered.map(o => (
               <tr key={o.id}>
                 <td>#{o.id}</td>
                 <td>Table {o.table_number}</td>

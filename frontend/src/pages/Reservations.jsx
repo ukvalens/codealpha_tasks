@@ -7,6 +7,9 @@ const Reservations = () => {
   const [reservations, setReservations] = useState([]);
   const [tables, setTables] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterDate, setFilterDate] = useState('');
   const [form, setForm] = useState({
     customer_name: '', customer_phone: '', customer_email: '',
     table_id: '', reservation_date: '', reservation_time: '',
@@ -42,6 +45,15 @@ const Reservations = () => {
     } catch { toast.error('Failed'); }
   };
 
+  const filtered = reservations.filter(r => {
+    const matchSearch = r.customer_name.toLowerCase().includes(search.toLowerCase()) ||
+      r.customer_phone.includes(search) ||
+      r.customer_email?.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = filterStatus ? r.status === filterStatus : true;
+    const matchDate = filterDate ? r.reservation_date?.split('T')[0] === filterDate : true;
+    return matchSearch && matchStatus && matchDate;
+  });
+
   return (
     <div className="page">
       <div className="page-header">
@@ -70,12 +82,25 @@ const Reservations = () => {
       )}
 
       <div className="card">
+        <div className="menu-filters" style={{ marginBottom: '1rem' }}>
+          <input placeholder="🔍 Search by name, phone or email..." value={search}
+            onChange={e => setSearch(e.target.value)} className="menu-search" />
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+            <option value="">All Status</option>
+            {['pending', 'confirmed', 'cancelled', 'completed'].map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)} style={{ width: 'auto' }} />
+          {(search || filterStatus || filterDate) && (
+            <button className="btn-secondary btn-sm" onClick={() => { setSearch(''); setFilterStatus(''); setFilterDate(''); }}>✕ Clear</button>
+          )}
+        </div>
+        <p className="menu-count">{filtered.length} reservation{filtered.length !== 1 ? 's' : ''} found</p>
         <table className="data-table">
           <thead>
             <tr><th>ID</th><th>Customer</th><th>Phone</th><th>Table</th><th>Date</th><th>Time</th><th>Party</th><th>Status</th>{canManage && <th>Action</th>}</tr>
           </thead>
           <tbody>
-            {reservations.map(r => (
+            {filtered.map(r => (
               <tr key={r.id}>
                 <td>#{r.id}</td>
                 <td>{r.customer_name}</td>
