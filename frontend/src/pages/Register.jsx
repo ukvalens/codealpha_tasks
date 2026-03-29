@@ -6,10 +6,30 @@ import toast from 'react-hot-toast';
 const Register = () => {
   const [form, setForm] = useState({ username: '', email: '', password: '', role: 'customer' });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+
+  const emailRegex = /^[a-zA-Z0-9._%+\-]{6,}@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+  const passwordRules = [
+    { test: v => v.length >= 8,          label: 'At least 8 characters' },
+    { test: v => /[A-Z]/.test(v),        label: 'One uppercase letter' },
+    { test: v => /[a-z]/.test(v),        label: 'One lowercase letter' },
+    { test: v => /[0-9]/.test(v),        label: 'One number' },
+    { test: v => /[^A-Za-z0-9]/.test(v), label: 'One special character' },
+  ];
+
+  const validate = () => {
+    const e = {};
+    if (!emailRegex.test(form.email)) e.email = 'Enter a valid email address';
+    const failedRules = passwordRules.filter(r => !r.test(form.password));
+    if (failedRules.length) e.password = failedRules.map(r => r.label);
+    return e;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const e2 = validate();
+    if (Object.keys(e2).length) { setErrors(e2); return; }
     setLoading(true);
     try {
       await api.post('/auth/register', form);
@@ -24,26 +44,52 @@ const Register = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
-        <h1>🍴 RestaurantMS</h1>
-        <h2>Create Account</h2>
-        <form onSubmit={handleSubmit}>
-          <input placeholder="Username" value={form.username}
-            onChange={e => setForm({ ...form, username: e.target.value })} required />
-          <input type="email" placeholder="Email" value={form.email}
-            onChange={e => setForm({ ...form, email: e.target.value })} required />
-          <input type="password" placeholder="Password" value={form.password}
-            onChange={e => setForm({ ...form, password: e.target.value })} required />
-          <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-            <option value="customer">Customer</option>
-            <option value="waiter">Waiter</option>
-            <option value="chef">Chef</option>
-            <option value="manager">Manager</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Register'}</button>
-        </form>
-        <p>Already have an account? <Link to="/login">Sign In</Link></p>
+      <div className="auth-split">
+        <div className="auth-info">
+          <div className="auth-info-inner">
+            <div className="auth-info-logo">🍴</div>
+            <h2>Join RestaurantMS</h2>
+            <p>Create your account and get instant access to a smarter way of managing your restaurant experience.</p>
+            <ul className="auth-features">
+              <li>🪑 Book & manage reservations</li>
+              <li>🛒 Place and track orders</li>
+              <li>🍽️ Browse our full menu</li>
+              <li>💳 Fast & secure payments</li>
+            </ul>
+          </div>
+        </div>
+        <div className="auth-card">
+          <h1>🍴 RestaurantMS</h1>
+          <h2>Create Account</h2>
+          <form onSubmit={handleSubmit}>
+            <input placeholder="Username" value={form.username}
+              onChange={e => setForm({ ...form, username: e.target.value })} required />
+            <input type="email" placeholder="Email" value={form.email}
+              onChange={e => { setForm({ ...form, email: e.target.value }); setErrors(p => ({ ...p, email: null })); }} required />
+            {errors.email && <span className="field-error">{errors.email}</span>}
+            <input type="password" placeholder="Password" value={form.password}
+              onChange={e => { setForm({ ...form, password: e.target.value }); setErrors(p => ({ ...p, password: null })); }} required />
+            {errors.password && (
+              <ul className="password-rules">
+                {errors.password.map(r => <li key={r}>✗ {r}</li>)}
+              </ul>
+            )}
+            {form.password && !errors.password && (
+              <ul className="password-rules success">
+                {passwordRules.map(r => <li key={r.label} className={r.test(form.password) ? 'pass' : 'fail'}>{r.test(form.password) ? '✓' : '✗'} {r.label}</li>)}
+              </ul>
+            )}
+            <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+              <option value="customer">Customer</option>
+              <option value="waiter">Waiter</option>
+              <option value="chef">Chef</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+            </select>
+            <button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Register'}</button>
+          </form>
+          <p>Already have an account? <Link to="/login">Sign In</Link></p>
+        </div>
       </div>
     </div>
   );
