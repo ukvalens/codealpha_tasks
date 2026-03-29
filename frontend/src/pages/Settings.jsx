@@ -11,6 +11,8 @@ const Settings = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('');
+  const [userPage, setUserPage] = useState(1);
+  const USERS_PER_PAGE = 5;
   const [showUserForm, setShowUserForm] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [userForm, setUserForm] = useState({ username: '', email: '', password: '', role: 'waiter' });
@@ -42,12 +44,14 @@ const Settings = () => {
 
   useEffect(() => { fetchUsers(); fetchStats(); }, []);
 
-  const filteredUsers = users.filter(u => {
+  const allFilteredUsers = users.filter(u => {
     const matchSearch = u.username.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase());
     const matchRole = filterRole ? u.role === filterRole : true;
     return matchSearch && matchRole;
   });
+  const totalUserPages = Math.ceil(allFilteredUsers.length / USERS_PER_PAGE);
+  const filteredUsers = allFilteredUsers.slice((userPage - 1) * USERS_PER_PAGE, userPage * USERS_PER_PAGE);
 
   const openCreate = () => {
     setEditUser(null);
@@ -144,16 +148,16 @@ const Settings = () => {
           <div className="card">
             <div className="menu-filters" style={{ marginBottom: '1rem' }}>
               <input placeholder="🔍 Search by name or email..." value={search}
-                onChange={e => setSearch(e.target.value)} className="menu-search" />
-              <select value={filterRole} onChange={e => setFilterRole(e.target.value)}>
+                onChange={e => { setSearch(e.target.value); setUserPage(1); }} className="menu-search" />
+              <select value={filterRole} onChange={e => { setFilterRole(e.target.value); setUserPage(1); }}>
                 <option value="">All Roles</option>
                 {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
               {(search || filterRole) && (
-                <button className="btn-secondary btn-sm" onClick={() => { setSearch(''); setFilterRole(''); }}>✕ Clear</button>
+                <button className="btn-secondary btn-sm" onClick={() => { setSearch(''); setFilterRole(''); setUserPage(1); }}>✕ Clear</button>
               )}
             </div>
-            <p className="menu-count">{filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}</p>
+            <p className="menu-count">{allFilteredUsers.length} user{allFilteredUsers.length !== 1 ? 's' : ''}</p>
             <table className="data-table">
               <thead>
                 <tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr>
@@ -176,6 +180,19 @@ const Settings = () => {
                 ))}
               </tbody>
             </table>
+            {totalUserPages > 1 && (
+              <div className="pagination">
+                <button className="page-btn" onClick={() => setUserPage(p => p - 1)} disabled={userPage === 1}>← Prev</button>
+                {Array.from({ length: totalUserPages }, (_, i) => (
+                  <button key={i + 1} className={`page-btn ${userPage === i + 1 ? 'page-btn-active' : ''}`}
+                    onClick={() => setUserPage(i + 1)}>{i + 1}</button>
+                ))}
+                <button className="page-btn" onClick={() => setUserPage(p => p + 1)} disabled={userPage === totalUserPages}>Next →</button>
+              </div>
+            )}
+            <p className="menu-count" style={{ marginTop: '0.5rem' }}>
+              Showing {allFilteredUsers.length === 0 ? 0 : (userPage - 1) * USERS_PER_PAGE + 1}–{Math.min(userPage * USERS_PER_PAGE, allFilteredUsers.length)} of {allFilteredUsers.length}
+            </p>
           </div>
         </>
       )}
