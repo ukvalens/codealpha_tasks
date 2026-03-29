@@ -16,7 +16,7 @@ const Menu = () => {
   const [itemForm, setItemForm] = useState({ category_id: '', name: '', description: '', price: '', image_url: '' });
   const [catForm, setCatForm] = useState({ name: '', description: '' });
   const [catPage, setCatPage] = useState(1);
-  const CAT_PER_PAGE = 10;
+  const CAT_PER_PAGE = 5;
   const { user } = useAuth();
   const canManage = ['admin', 'manager'].includes(user?.role);
 
