@@ -12,6 +12,8 @@ import Menu from './pages/Menu';
 import Orders from './pages/Orders';
 import Reservations from './pages/Reservations';
 import Payments from './pages/Payments';
+import Profile from './pages/Profile';
+import ChangePassword from './pages/ChangePassword';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
@@ -34,6 +36,8 @@ function App() {
             <Route path="orders" element={<Orders />} />
             <Route path="reservations" element={<Reservations />} />
             <Route path="payments" element={<ProtectedRoute roles={['admin', 'manager']}><Payments /></ProtectedRoute>} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="change-password" element={<ChangePassword />} />
             <Route path="*" element={<Navigate to="/app/dashboard" />} />
           </Route>
         </Routes>
