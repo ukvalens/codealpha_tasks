@@ -31,9 +31,9 @@ const Home = () => {
       {/* Hero */}
       <section className="hero">
         <div className="hero-content">
-          <span className="hero-badge">🚀 Restaurant Management Made Simple</span>
+          <span className="hero-badge">Restaurant Management System</span>
           <h1>Run Your Restaurant<br /><span className="hero-highlight">Smarter & Faster</span></h1>
-          <p>A complete system for tables, orders, and payments — all in one place.</p>
+          <p>A complete system for tables, orders, and payments all in one place.</p>
           <div className="hero-actions">
             {token ? (
               <Link to="/app/dashboard" className="hero-btn-primary">Go to Dashboard →</Link>
@@ -77,8 +77,8 @@ const Home = () => {
           <div className="footer-col">
             <h4>Contact</h4>
             <ul>
-              <li>📧 support@restaurantms.com</li>
-              <li>📞 +1 (555) 123-4567</li>
+              <li>📧support@restaurantms.com</li>
+              <li>📞 +250780468216</li>
               <li>📍 123 Food Street, NY</li>
               <li>🕐 Mon–Fri, 9am–6pm</li>
             </ul>

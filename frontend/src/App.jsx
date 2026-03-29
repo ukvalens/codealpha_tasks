@@ -12,6 +12,8 @@ import Menu from './pages/Menu';
 import Orders from './pages/Orders';
 import Reservations from './pages/Reservations';
 import Payments from './pages/Payments';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/app" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route index element={<Navigate to="/app/dashboard" />} />
             <Route path="dashboard" element={<Dashboard />} />
