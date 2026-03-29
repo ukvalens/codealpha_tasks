@@ -63,6 +63,7 @@ function App() {
             <Route path="my-reservations" element={<MyReservations />} />
             <Route path="my-orders" element={<MyOrders />} />
             <Route path="profile" element={<CustomerProfile />} />
+            <Route path="change-password" element={<ChangePassword />} />
             <Route path="*" element={<Navigate to="/customer/dashboard" />} />
           </Route>
         </Routes>

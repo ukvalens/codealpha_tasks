@@ -52,7 +52,7 @@ const CustomerTopbar = () => {
             </div>
             <hr className="dropdown-divider" />
             <Link to="/customer/profile" className="dropdown-item" onClick={() => setOpen(false)}>👤 My Profile</Link>
-            <Link to="/customer/my-reservations" className="dropdown-item" onClick={() => setOpen(false)}>📋 My Reservations</Link>
+            <Link to="/customer/change-password" className="dropdown-item" onClick={() => setOpen(false)}>🔒 Change Password</Link>
             <hr className="dropdown-divider" />
             <button className="dropdown-item dropdown-logout" onClick={handleLogout}>🚪 Logout</button>
           </div>
