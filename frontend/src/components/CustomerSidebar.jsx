@@ -2,9 +2,11 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
+  { to: '/customer/dashboard', label: '📊 Dashboard' },
   { to: '/customer/menu', label: '🍽️ Menu' },
   { to: '/customer/reserve', label: '📅 Make Reservation' },
   { to: '/customer/my-reservations', label: '📋 My Reservations' },
+  { to: '/customer/my-orders', label: '🛒 Orders' },
 ];
 
 const CustomerSidebar = () => {
@@ -25,7 +27,6 @@ const CustomerSidebar = () => {
           </NavLink>
         ))}
       </nav>
-      <button className="logout-btn" onClick={handleLogout}>🚪 Logout</button>
     </aside>
   );
 };

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -6,7 +7,8 @@ import toast from 'react-hot-toast';
 const BASE_URL = 'http://localhost:5000';
 
 const CustomerProfile = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({ username: user?.username || '', email: user?.email || '' });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -101,6 +103,9 @@ const CustomerProfile = () => {
           </div>
           <button type="submit" className="btn-primary" disabled={loading} style={{ alignSelf: 'flex-start' }}>
             {loading ? 'Saving...' : 'Save Changes'}
+          </button>
+          <button type="button" className="btn-danger" onClick={() => { logout(); navigate('/login'); }} style={{ alignSelf: 'flex-start' }}>
+            🚪 Logout
           </button>
         </form>
       </div>

@@ -30,7 +30,6 @@ const Sidebar = () => {
             </NavLink>
           ))}
       </nav>
-      <button className="logout-btn" onClick={handleLogout}>🚪 Logout</button>
     </aside>
   );
 };

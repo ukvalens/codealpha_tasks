@@ -21,6 +21,8 @@ import CustomerMenu from './pages/customer/CustomerMenu';
 import CustomerReserve from './pages/customer/CustomerReserve';
 import MyReservations from './pages/customer/MyReservations';
 import CustomerProfile from './pages/customer/CustomerProfile';
+import CustomerDashboard from './pages/customer/CustomerDashboard';
+import MyOrders from './pages/customer/MyOrders';
 
 const STAFF = ['admin', 'manager', 'waiter', 'chef'];
 
@@ -52,12 +54,14 @@ function App() {
 
           {/* Customer routes */}
           <Route path="/customer" element={<ProtectedRoute roles={['customer']}><CustomerLayout /></ProtectedRoute>}>
-            <Route index element={<Navigate to="/customer/menu" />} />
+            <Route index element={<Navigate to="/customer/dashboard" />} />
+            <Route path="dashboard" element={<CustomerDashboard />} />
             <Route path="menu" element={<CustomerMenu />} />
             <Route path="reserve" element={<CustomerReserve />} />
             <Route path="my-reservations" element={<MyReservations />} />
+            <Route path="my-orders" element={<MyOrders />} />
             <Route path="profile" element={<CustomerProfile />} />
-            <Route path="*" element={<Navigate to="/customer/menu" />} />
+            <Route path="*" element={<Navigate to="/customer/dashboard" />} />
           </Route>
         </Routes>
       </BrowserRouter>
