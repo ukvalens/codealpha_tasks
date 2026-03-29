@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
@@ -10,9 +10,7 @@ const navItems = [
 ];
 
 const CustomerSidebar = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const { user } = useAuth();
 
   return (
     <aside className="sidebar">
