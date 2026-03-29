@@ -6,6 +6,9 @@ import { useAuth } from '../context/AuthContext';
 const Menu = () => {
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
+  const [search, setSearch] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [filterAvailability, setFilterAvailability] = useState('');
   const [activeTab, setActiveTab] = useState('items');
   const [showItemForm, setShowItemForm] = useState(false);
   const [showCatForm, setShowCatForm] = useState(false);
@@ -67,6 +70,15 @@ const Menu = () => {
     setActiveTab('items');
   };
 
+  const filteredItems = items.filter(item => {
+    const matchSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
+      item.description?.toLowerCase().includes(search.toLowerCase());
+    const matchCategory = filterCategory ? item.category_id === +filterCategory : true;
+    const matchAvailability = filterAvailability === '' ? true
+      : filterAvailability === 'available' ? item.is_available : !item.is_available;
+    return matchSearch && matchCategory && matchAvailability;
+  });
+
   return (
     <div className="page">
       <div className="page-header">
@@ -113,8 +125,32 @@ const Menu = () => {
       </div>
 
       {activeTab === 'items' && (
-        <div className="menu-grid">
-          {items.map(item => (
+        <>
+          <div className="menu-filters">
+            <input
+              placeholder="🔍 Search by name or description..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="menu-search"
+            />
+            <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}>
+              <option value="">All Categories</option>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <select value={filterAvailability} onChange={e => setFilterAvailability(e.target.value)}>
+              <option value="">All Status</option>
+              <option value="available">Available</option>
+              <option value="unavailable">Unavailable</option>
+            </select>
+            {(search || filterCategory || filterAvailability) && (
+              <button className="btn-secondary btn-sm" onClick={() => { setSearch(''); setFilterCategory(''); setFilterAvailability(''); }}>✕ Clear</button>
+            )}
+          </div>
+          <p className="menu-count">{filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''} found</p>
+          <div className="menu-grid">
+            {filteredItems.length === 0 ? (
+              <p className="no-results">No items match your search.</p>
+            ) : filteredItems.map(item => (
             <div key={item.id} className="menu-card">
               {item.image_url && <img src={item.image_url} alt={item.name} className="menu-img" onError={e => e.target.style.display = 'none'} />}
               <div className="menu-card-body">
@@ -135,8 +171,9 @@ const Menu = () => {
                 )}
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       )}
 
       {activeTab === 'categories' && (

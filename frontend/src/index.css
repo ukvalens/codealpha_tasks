@@ -93,6 +93,12 @@ body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--
 .table-card h3 { font-size: 1.1rem; }
 .table-card p { color: var(--text-muted); font-size: 0.9rem; }
 
+.menu-filters { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.menu-search { flex: 1; min-width: 200px; }
+.menu-filters select { width: auto; }
+.menu-count { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
+.no-results { color: var(--text-muted); font-size: 0.95rem; padding: 1rem 0; }
+
 /* Menu grid */
 .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
 .menu-card { background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
