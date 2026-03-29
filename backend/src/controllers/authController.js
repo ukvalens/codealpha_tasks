@@ -27,7 +27,7 @@ exports.login = async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).json({ error: 'Invalid credentials' });
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
+    res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role, avatar_url: user.avatar_url } });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -78,8 +78,22 @@ exports.updateProfile = async (req, res) => {
   const { username, email } = req.body;
   try {
     const result = await pool.query(
-      'UPDATE users SET username = $1, email = $2 WHERE id = $3 RETURNING id, username, email, role',
+      'UPDATE users SET username = $1, email = $2 WHERE id = $3 RETURNING id, username, email, role, avatar_url',
       [username, email, req.user.id]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const avatarUrl = `/uploads/${req.file.filename}`;
+    const result = await pool.query(
+      'UPDATE users SET avatar_url = $1 WHERE id = $2 RETURNING id, username, email, role, avatar_url',
+      [avatarUrl, req.user.id]
     );
     res.json(result.rows[0]);
   } catch (error) {

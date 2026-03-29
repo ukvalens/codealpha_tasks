@@ -8,7 +8,6 @@ const Topbar = () => {
   const ref = useRef();
   const navigate = useNavigate();
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', handler);
@@ -16,7 +15,6 @@ const Topbar = () => {
   }, []);
 
   const handleLogout = () => { logout(); navigate('/login'); };
-
   const initials = user?.username?.slice(0, 2).toUpperCase() || 'U';
 
   return (
