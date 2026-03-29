@@ -8,6 +8,7 @@ const navItems = [
   { to: '/app/orders', label: '📋 Orders', roles: ['admin', 'manager', 'waiter', 'chef'] },
   { to: '/app/reservations', label: '📅 Reservations', roles: ['admin', 'manager', 'waiter'] },
   { to: '/app/payments', label: '💳 Payments', roles: ['admin', 'manager'] },
+  { to: '/app/settings', label: '⚙️ Settings', roles: ['admin'] },
 ];
 
 const Sidebar = () => {

@@ -101,6 +101,54 @@ exports.uploadAvatar = async (req, res) => {
   }
 };
 
+exports.getUsers = async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.createUser = async (req, res) => {
+  const { username, email, password, role } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role, created_at',
+      [username, email, hashedPassword, role]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.updateUser = async (req, res) => {
+  const { id } = req.params;
+  const { username, email, role } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE users SET username = $1, email = $2, role = $3 WHERE id = $4 RETURNING id, username, email, role, created_at',
+      [username, email, role, id]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (+id === req.user.id) return res.status(400).json({ error: 'Cannot delete your own account' });
+    await pool.query('DELETE FROM users WHERE id = $1', [id]);
+    res.json({ message: 'User deleted' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   try {
