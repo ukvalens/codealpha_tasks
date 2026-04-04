@@ -4,11 +4,13 @@ import { useAuth } from '../context/AuthContext';
 
 const BASE_URL = 'http://localhost:5000';
 
-const Topbar = () => {
+const Topbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef();
   const navigate = useNavigate();
+  const initials = user?.username?.slice(0, 2).toUpperCase() || 'U';
+  const avatarSrc = user?.avatar_url ? `${BASE_URL}${user.avatar_url}` : null;
 
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -17,18 +19,18 @@ const Topbar = () => {
   }, []);
 
   const handleLogout = () => { logout(); navigate('/login'); };
-  const avatarSrc = user?.avatar_url ? `${BASE_URL}${user.avatar_url}` : null;
 
   return (
     <header className="topbar">
       <div className="topbar-left">
+        <button className="hamburger-btn" onClick={onMenuClick}>☰</button>
         <h2 className="topbar-title">Welcome, {user?.username} 👋</h2>
       </div>
       <div className="topbar-right" ref={ref}>
         <button className="avatar-btn" onClick={() => setOpen(!open)}>
           {avatarSrc
             ? <img src={avatarSrc} alt="profile" className="topbar-avatar-img" />
-            : <div className="topbar-avatar-placeholder">👤</div>
+            : <div className="avatar">{initials}</div>
           }
           <div className="avatar-info">
             <span className="avatar-name">{user?.username}</span>
@@ -36,13 +38,12 @@ const Topbar = () => {
           </div>
           <span className="avatar-chevron">{open ? '▲' : '▼'}</span>
         </button>
-
         {open && (
           <div className="profile-dropdown">
             <div className="dropdown-header">
               {avatarSrc
                 ? <img src={avatarSrc} alt="profile" className="dropdown-avatar-img" />
-                : <div className="dropdown-avatar-placeholder">👤</div>
+                : <div className="avatar avatar-lg">{initials}</div>
               }
               <div>
                 <p className="dropdown-name">{user?.username}</p>

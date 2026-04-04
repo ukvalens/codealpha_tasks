@@ -8,24 +8,26 @@ const navItems = [
   { to: '/app/orders', label: '📋 Orders', roles: ['admin', 'manager', 'waiter', 'chef'] },
   { to: '/app/reservations', label: '📅 Reservations', roles: ['admin', 'manager', 'waiter'] },
   { to: '/app/payments', label: '💳 Payments', roles: ['admin', 'manager'] },
-  { to: '/app/announcements', label: '📢 Announcements', roles: ['admin', 'manager', 'waiter', 'chef'] },
-  { to: '/app/settings', label: '⚙️ Settings', roles: ['admin'] },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ onClose }) => {
   const { user } = useAuth();
 
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h2>🍴 RestaurantMS</h2>
+        <div className="sidebar-header-top">
+          <h2>🍴 RestaurantMS</h2>
+          <button className="sidebar-close-btn" onClick={onClose}>✕</button>
+        </div>
         <p className="user-info">{user?.username} <span className="role-badge">{user?.role}</span></p>
       </div>
       <nav>
         {navItems
           .filter(item => item.roles.includes(user?.role))
           .map(item => (
-            <NavLink key={item.to} to={item.to} className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+            <NavLink key={item.to} to={item.to} onClick={onClose}
+              className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
               {item.label}
             </NavLink>
           ))}

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 const BASE_URL = 'http://localhost:5000';
 
-const CustomerTopbar = () => {
+const CustomerTopbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef();
@@ -23,6 +23,7 @@ const CustomerTopbar = () => {
   return (
     <header className="topbar">
       <div className="topbar-left">
+        <button className="hamburger-btn" onClick={onMenuClick}>☰</button>
         <h2 className="topbar-title">Welcome, {user?.username} 👋</h2>
       </div>
       <div className="topbar-right" ref={ref}>
@@ -52,7 +53,7 @@ const CustomerTopbar = () => {
             </div>
             <hr className="dropdown-divider" />
             <Link to="/customer/profile" className="dropdown-item" onClick={() => setOpen(false)}>👤 My Profile</Link>
-            <Link to="/customer/change-password" className="dropdown-item" onClick={() => setOpen(false)}>🔒 Change Password</Link>
+            <Link to="/customer/my-reservations" className="dropdown-item" onClick={() => setOpen(false)}>📋 My Reservations</Link>
             <hr className="dropdown-divider" />
             <button className="dropdown-item dropdown-logout" onClick={handleLogout}>🚪 Logout</button>
           </div>
