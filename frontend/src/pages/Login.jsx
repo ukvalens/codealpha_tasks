@@ -43,15 +43,25 @@ const Login = () => {
           <h1>🍴 RestaurantMS</h1>
           <h2>Sign In</h2>
           <form onSubmit={handleSubmit}>
-            <input type="email" placeholder="Email" value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })} required />
-            <input type="password" placeholder="Password" value={form.password}
-              onChange={e => setForm({ ...form, password: e.target.value })} required />
-            <button type="submit" disabled={loading}>{loading ? 'Signing in...' : 'Sign In'}</button>
+            <div className="auth-input-group">
+              <span className="auth-input-icon">✉️</span>
+              <input type="email" placeholder="Email address" value={form.email}
+                onChange={e => setForm({ ...form, email: e.target.value })} required />
+            </div>
+            <div className="auth-input-group">
+              <span className="auth-input-icon">🔒</span>
+              <input type="password" placeholder="Password" value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })} required />
+            </div>
+            <button type="submit" className="auth-submit-btn" disabled={loading}>
+              {loading ? <span className="auth-btn-loading">Signing in...</span> : 'Sign In →'}
+            </button>
           </form>
-          <p>Don't have an account? <Link to="/register">Register</Link></p>
-          <p><Link to="/forgot-password">Forgot password?</Link></p>
-          <p><Link to="/">← Back to Home</Link></p>
+          <div className="auth-links">
+            <Link to="/register">Don't have an account? <strong>Register</strong></Link>
+            <Link to="/forgot-password">Forgot password?</Link>
+            <Link to="/">← Back to Home</Link>
+          </div>
         </div>
       </div>
     </div>

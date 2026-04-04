@@ -62,13 +62,22 @@ const Register = () => {
           <h1>🍴 RestaurantMS</h1>
           <h2>Create Account</h2>
           <form onSubmit={handleSubmit}>
-            <input placeholder="Username" value={form.username}
-              onChange={e => setForm({ ...form, username: e.target.value })} required />
-            <input type="email" placeholder="Email" value={form.email}
-              onChange={e => { setForm({ ...form, email: e.target.value }); setErrors(p => ({ ...p, email: null })); }} required />
+            <div className="auth-input-group">
+              <span className="auth-input-icon">👤</span>
+              <input placeholder="Username" value={form.username}
+                onChange={e => setForm({ ...form, username: e.target.value })} required />
+            </div>
+            <div className="auth-input-group">
+              <span className="auth-input-icon">✉️</span>
+              <input type="email" placeholder="Email address" value={form.email}
+                onChange={e => { setForm({ ...form, email: e.target.value }); setErrors(p => ({ ...p, email: null })); }} required />
+            </div>
             {errors.email && <span className="field-error">{errors.email}</span>}
-            <input type="password" placeholder="Password" value={form.password}
-              onChange={e => { setForm({ ...form, password: e.target.value }); setErrors(p => ({ ...p, password: null })); }} required />
+            <div className="auth-input-group">
+              <span className="auth-input-icon">🔒</span>
+              <input type="password" placeholder="Password" value={form.password}
+                onChange={e => { setForm({ ...form, password: e.target.value }); setErrors(p => ({ ...p, password: null })); }} required />
+            </div>
             {errors.password && (
               <ul className="password-rules">
                 {errors.password.map(r => <li key={r}>✗ {r}</li>)}
@@ -79,16 +88,23 @@ const Register = () => {
                 {passwordRules.map(r => <li key={r.label} className={r.test(form.password) ? 'pass' : 'fail'}>{r.test(form.password) ? '✓' : '✗'} {r.label}</li>)}
               </ul>
             )}
-            <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
-              <option value="customer">Customer</option>
-              <option value="waiter">Waiter</option>
-              <option value="chef">Chef</option>
-              <option value="manager">Manager</option>
-              <option value="admin">Admin</option>
-            </select>
-            <button type="submit" disabled={loading}>{loading ? 'Creating...' : 'Register'}</button>
+            <div className="auth-input-group">
+              <span className="auth-input-icon">🏷️</span>
+              <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })}>
+                <option value="customer">Customer</option>
+                <option value="waiter">Waiter</option>
+                <option value="chef">Chef</option>
+                <option value="manager">Manager</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <button type="submit" className="auth-submit-btn" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create Account →'}
+            </button>
           </form>
-          <p>Already have an account? <Link to="/login">Sign In</Link></p>
+          <div className="auth-links">
+            <Link to="/login">Already have an account? <strong>Sign In</strong></Link>
+          </div>
         </div>
       </div>
     </div>
