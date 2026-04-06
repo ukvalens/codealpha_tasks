@@ -17,7 +17,7 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000,
 });
 
-app.use(cors({ origin: ['https://restaurant-ms-gilt.vercel.app', 'http://localhost:5173'], credentials: true }));
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
