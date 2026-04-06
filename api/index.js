@@ -17,7 +17,7 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000,
 });
 
-app.use(cors({ origin: ['https://restaurant-ms-gilt.vercel.app', 'http://localhost:5173'], credentials: true }));
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
@@ -34,8 +34,12 @@ const authMiddleware = (req, res, next) => {
 const roleCheck = (...roles) => (req, res, next) =>
   roles.includes(req.user.role) ? next() : res.status(403).json({ error: 'Access forbidden' });
 
+const r = express.Router();
+app.use('/api', r);
+app.use('/', r);
+
 // ── AUTH ──────────────────────────────────────────────────────────────────────
-app.post('/auth/register', async (req, res) => {
+r.post('/auth/register', async (req, res) => {
   const { username, email, password, role } = req.body;
   try {
     const hashed = await bcrypt.hash(password, 10);
@@ -47,7 +51,7 @@ app.post('/auth/register', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/auth/login', async (req, res) => {
+r.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
     const r = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
@@ -60,7 +64,7 @@ app.post('/auth/login', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/auth/forgot-password', async (req, res) => {
+r.post('/auth/forgot-password', async (req, res) => {
   const { email } = req.body;
   try {
     const r = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
@@ -74,7 +78,7 @@ app.post('/auth/forgot-password', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/auth/reset-password', async (req, res) => {
+r.post('/auth/reset-password', async (req, res) => {
   const { token, password } = req.body;
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET + '_reset');
@@ -84,7 +88,7 @@ app.post('/auth/reset-password', async (req, res) => {
   } catch { res.status(400).json({ error: 'Invalid or expired token' }); }
 });
 
-app.put('/auth/profile', authMiddleware, async (req, res) => {
+r.put('/auth/profile', authMiddleware, async (req, res) => {
   const { username, email } = req.body;
   try {
     const r = await pool.query('UPDATE users SET username=$1,email=$2 WHERE id=$3 RETURNING id,username,email,role,avatar_url', [username, email, req.user.id]);
@@ -92,7 +96,7 @@ app.put('/auth/profile', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put('/auth/change-password', authMiddleware, async (req, res) => {
+r.put('/auth/change-password', authMiddleware, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   try {
     const r = await pool.query('SELECT * FROM users WHERE id=$1', [req.user.id]);
@@ -103,7 +107,7 @@ app.put('/auth/change-password', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/auth/avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
+r.post('/auth/avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
@@ -112,14 +116,14 @@ app.post('/auth/avatar', authMiddleware, upload.single('avatar'), async (req, re
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/auth/users', authMiddleware, roleCheck('admin'), async (req, res) => {
+r.get('/auth/users', authMiddleware, roleCheck('admin'), async (req, res) => {
   try {
     const r = await pool.query('SELECT id,username,email,role,created_at FROM users ORDER BY created_at DESC');
     res.json(r.rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/auth/users', authMiddleware, roleCheck('admin'), async (req, res) => {
+r.post('/auth/users', authMiddleware, roleCheck('admin'), async (req, res) => {
   const { username, email, password, role } = req.body;
   try {
     const hashed = await bcrypt.hash(password, 10);
@@ -128,7 +132,7 @@ app.post('/auth/users', authMiddleware, roleCheck('admin'), async (req, res) => 
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put('/auth/users/:id', authMiddleware, roleCheck('admin'), async (req, res) => {
+r.put('/auth/users/:id', authMiddleware, roleCheck('admin'), async (req, res) => {
   const { username, email, role } = req.body;
   try {
     const r = await pool.query('UPDATE users SET username=$1,email=$2,role=$3 WHERE id=$4 RETURNING id,username,email,role,created_at', [username, email, role, req.params.id]);
@@ -136,7 +140,7 @@ app.put('/auth/users/:id', authMiddleware, roleCheck('admin'), async (req, res) 
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.delete('/auth/users/:id', authMiddleware, roleCheck('admin'), async (req, res) => {
+r.delete('/auth/users/:id', authMiddleware, roleCheck('admin'), async (req, res) => {
   try {
     if (+req.params.id === req.user.id) return res.status(400).json({ error: 'Cannot delete your own account' });
     await pool.query('DELETE FROM users WHERE id=$1', [req.params.id]);
@@ -145,12 +149,12 @@ app.delete('/auth/users/:id', authMiddleware, roleCheck('admin'), async (req, re
 });
 
 // ── MENU ──────────────────────────────────────────────────────────────────────
-app.get('/menu/categories', authMiddleware, async (req, res) => {
+r.get('/menu/categories', authMiddleware, async (req, res) => {
   try { res.json((await pool.query('SELECT * FROM menu_categories ORDER BY name')).rows); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/menu/categories', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
+r.post('/menu/categories', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
   const { name, description } = req.body;
   try {
     const r = await pool.query('INSERT INTO menu_categories (name,description) VALUES ($1,$2) RETURNING *', [name, description]);
@@ -158,14 +162,14 @@ app.post('/menu/categories', authMiddleware, roleCheck('admin', 'manager'), asyn
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/menu/items', authMiddleware, async (req, res) => {
+r.get('/menu/items', authMiddleware, async (req, res) => {
   try {
     const r = await pool.query('SELECT mi.*,mc.name as category_name FROM menu_items mi LEFT JOIN menu_categories mc ON mi.category_id=mc.id ORDER BY mc.name,mi.name');
     res.json(r.rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/menu/items', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
+r.post('/menu/items', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
   const { category_id, name, description, price, image_url } = req.body;
   try {
     const r = await pool.query('INSERT INTO menu_items (category_id,name,description,price,image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *', [category_id, name, description, price, image_url]);
@@ -173,7 +177,7 @@ app.post('/menu/items', authMiddleware, roleCheck('admin', 'manager'), async (re
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put('/menu/items/:id', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
+r.put('/menu/items/:id', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
   const { name, description, price, is_available } = req.body;
   try {
     const r = await pool.query('UPDATE menu_items SET name=$1,description=$2,price=$3,is_available=$4 WHERE id=$5 RETURNING *', [name, description, price, is_available, req.params.id]);
@@ -181,7 +185,7 @@ app.put('/menu/items/:id', authMiddleware, roleCheck('admin', 'manager'), async 
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.delete('/menu/items/:id', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
+r.delete('/menu/items/:id', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
   try {
     await pool.query('UPDATE order_items SET menu_item_id=NULL WHERE menu_item_id=$1', [req.params.id]);
     await pool.query('DELETE FROM menu_items WHERE id=$1', [req.params.id]);
@@ -190,12 +194,12 @@ app.delete('/menu/items/:id', authMiddleware, roleCheck('admin', 'manager'), asy
 });
 
 // ── TABLES ────────────────────────────────────────────────────────────────────
-app.get('/tables', authMiddleware, async (req, res) => {
+r.get('/tables', authMiddleware, async (req, res) => {
   try { res.json((await pool.query('SELECT * FROM tables ORDER BY table_number')).rows); }
   catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/tables', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
+r.post('/tables', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
   const { table_number, capacity } = req.body;
   try {
     const r = await pool.query('INSERT INTO tables (table_number,capacity) VALUES ($1,$2) RETURNING *', [table_number, capacity]);
@@ -203,7 +207,7 @@ app.post('/tables', authMiddleware, roleCheck('admin', 'manager'), async (req, r
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put('/tables/:id', authMiddleware, async (req, res) => {
+r.put('/tables/:id', authMiddleware, async (req, res) => {
   const { status } = req.body;
   try {
     const r = await pool.query('UPDATE tables SET status=$1 WHERE id=$2 RETURNING *', [status, req.params.id]);
@@ -212,14 +216,14 @@ app.put('/tables/:id', authMiddleware, async (req, res) => {
 });
 
 // ── ORDERS ────────────────────────────────────────────────────────────────────
-app.get('/orders', authMiddleware, async (req, res) => {
+r.get('/orders', authMiddleware, async (req, res) => {
   try {
     const r = await pool.query('SELECT o.*,t.table_number,u.username as waiter_name FROM orders o LEFT JOIN tables t ON o.table_id=t.id LEFT JOIN users u ON o.waiter_id=u.id ORDER BY o.created_at DESC');
     res.json(r.rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('/orders/:id', authMiddleware, async (req, res) => {
+r.get('/orders/:id', authMiddleware, async (req, res) => {
   try {
     const order = await pool.query('SELECT * FROM orders WHERE id=$1', [req.params.id]);
     const items = await pool.query('SELECT oi.*,mi.name FROM order_items oi LEFT JOIN menu_items mi ON oi.menu_item_id=mi.id WHERE oi.order_id=$1', [req.params.id]);
@@ -227,7 +231,7 @@ app.get('/orders/:id', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/orders', authMiddleware, async (req, res) => {
+r.post('/orders', authMiddleware, async (req, res) => {
   const { table_id, waiter_id, items } = req.body;
   const client = await pool.connect();
   try {
@@ -246,7 +250,7 @@ app.post('/orders', authMiddleware, async (req, res) => {
   finally { client.release(); }
 });
 
-app.put('/orders/:id', authMiddleware, async (req, res) => {
+r.put('/orders/:id', authMiddleware, async (req, res) => {
   const { status } = req.body;
   try {
     const r = await pool.query('UPDATE orders SET status=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2 RETURNING *', [status, req.params.id]);
@@ -255,14 +259,14 @@ app.put('/orders/:id', authMiddleware, async (req, res) => {
 });
 
 // ── RESERVATIONS ──────────────────────────────────────────────────────────────
-app.get('/reservations', authMiddleware, async (req, res) => {
+r.get('/reservations', authMiddleware, async (req, res) => {
   try {
     const r = await pool.query('SELECT r.*,t.table_number FROM reservations r LEFT JOIN tables t ON r.table_id=t.id ORDER BY r.reservation_date,r.reservation_time');
     res.json(r.rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/reservations', authMiddleware, async (req, res) => {
+r.post('/reservations', authMiddleware, async (req, res) => {
   const { customer_name, customer_phone, customer_email, table_id, reservation_date, reservation_time, party_size, special_requests } = req.body;
   try {
     const r = await pool.query(
@@ -273,7 +277,7 @@ app.post('/reservations', authMiddleware, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put('/reservations/:id', authMiddleware, async (req, res) => {
+r.put('/reservations/:id', authMiddleware, async (req, res) => {
   const { status } = req.body;
   try {
     const r = await pool.query('UPDATE reservations SET status=$1 WHERE id=$2 RETURNING *', [status, req.params.id]);
@@ -282,14 +286,14 @@ app.put('/reservations/:id', authMiddleware, async (req, res) => {
 });
 
 // ── PAYMENTS ──────────────────────────────────────────────────────────────────
-app.get('/payments', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
+r.get('/payments', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
   try {
     const r = await pool.query('SELECT p.*,o.table_id FROM payments p LEFT JOIN orders o ON p.order_id=o.id ORDER BY p.created_at DESC');
     res.json(r.rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/payments', authMiddleware, async (req, res) => {
+r.post('/payments', authMiddleware, async (req, res) => {
   const { order_id, amount, payment_method, transaction_id } = req.body;
   const client = await pool.connect();
   try {
@@ -307,14 +311,14 @@ app.post('/payments', authMiddleware, async (req, res) => {
 // ── ANNOUNCEMENTS ─────────────────────────────────────────────────────────────
 const ensureAnnouncementsTable = () => pool.query(`CREATE TABLE IF NOT EXISTS announcements (id SERIAL PRIMARY KEY, title VARCHAR(255) NOT NULL, message TEXT NOT NULL, priority VARCHAR(20) DEFAULT 'normal', created_by INTEGER, created_by_name VARCHAR(100), created_at TIMESTAMP DEFAULT NOW())`);
 
-app.get('/announcements', authMiddleware, async (req, res) => {
+r.get('/announcements', authMiddleware, async (req, res) => {
   try {
     await ensureAnnouncementsTable();
     res.json((await pool.query('SELECT * FROM announcements ORDER BY created_at DESC')).rows);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/announcements', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
+r.post('/announcements', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
   const { title, message, priority = 'normal' } = req.body;
   try {
     await ensureAnnouncementsTable();
@@ -324,7 +328,7 @@ app.post('/announcements', authMiddleware, roleCheck('admin', 'manager'), async 
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.delete('/announcements/:id', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
+r.delete('/announcements/:id', authMiddleware, roleCheck('admin', 'manager'), async (req, res) => {
   try {
     await pool.query('DELETE FROM announcements WHERE id=$1', [req.params.id]);
     res.json({ message: 'Deleted' });
