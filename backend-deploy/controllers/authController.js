@@ -90,10 +90,10 @@ exports.updateProfile = async (req, res) => {
 exports.uploadAvatar = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const avatarUrl = `/uploads/${req.file.filename}`;
+    const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     const result = await pool.query(
       'UPDATE users SET avatar_url = $1 WHERE id = $2 RETURNING id, username, email, role, avatar_url',
-      [avatarUrl, req.user.id]
+      [base64, req.user.id]
     );
     res.json(result.rows[0]);
   } catch (error) {
