@@ -9,18 +9,23 @@ const orderRoutes = require('../backend/src/routes/orderRoutes');
 const tableRoutes = require('../backend/src/routes/tableRoutes');
 const reservationRoutes = require('../backend/src/routes/reservationRoutes');
 const paymentRoutes = require('../backend/src/routes/paymentRoutes');
+const announcementRoutes = require('../backend/src/routes/announcementRoutes');
 
 const app = express();
 
-app.use(cors({ origin: '*' }));
+app.use(cors({
+  origin: ['https://restaurant-ms-one.vercel.app', 'http://localhost:5173'],
+  credentials: true
+}));
 app.use(express.json());
 
-app.get('/', (req, res) => res.json({ message: 'Restaurant Management System API' }));
+app.get('/api', (req, res) => res.json({ message: 'Restaurant Management System API' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/reservations', reservationRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 module.exports = app;
