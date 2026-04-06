@@ -19,7 +19,14 @@ app.use(cors({
 }));
 app.use(express.json());
 
-app.get('/', (req, res) => res.json({ message: 'Restaurant Management System API' }));
+app.get('/health', (req, res) => res.json({ message: 'Restaurant Management System API' }));
+app.use('/api/auth', authRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/tables', tableRoutes);
+app.use('/api/reservations', reservationRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/announcements', announcementRoutes);
 app.use('/auth', authRoutes);
 app.use('/menu', menuRoutes);
 app.use('/orders', orderRoutes);
