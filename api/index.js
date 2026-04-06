@@ -3,13 +3,13 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-const authRoutes = require('../backend/src/routes/authRoutes');
-const menuRoutes = require('../backend/src/routes/menuRoutes');
-const orderRoutes = require('../backend/src/routes/orderRoutes');
-const tableRoutes = require('../backend/src/routes/tableRoutes');
-const reservationRoutes = require('../backend/src/routes/reservationRoutes');
-const paymentRoutes = require('../backend/src/routes/paymentRoutes');
-const announcementRoutes = require('../backend/src/routes/announcementRoutes');
+const authRoutes = require('./routes/authRoutes');
+const menuRoutes = require('./routes/menuRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const tableRoutes = require('./routes/tableRoutes');
+const reservationRoutes = require('./routes/reservationRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
 
 const app = express();
 
