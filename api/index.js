@@ -14,7 +14,7 @@ const announcementRoutes = require('../backend/src/routes/announcementRoutes');
 const app = express();
 
 app.use(cors({
-  origin: ['https://restaurant-ms-one.vercel.app', 'http://localhost:5173'],
+  origin: ['https://restaurant-ms-gilt.vercel.app', 'http://localhost:5173'],
   credentials: true
 }));
 app.use(express.json());
