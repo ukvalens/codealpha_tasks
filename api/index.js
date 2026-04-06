@@ -63,11 +63,12 @@ r.post('/auth/register', async (req, res) => {
 r.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    const r = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
-    if (!r.rows.length) return res.status(401).json({ error: 'Invalid credentials' });
-    const user = r.rows[0];
+    const r2 = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
+    if (!r2.rows.length) return res.status(401).json({ error: 'Invalid credentials', debug: 'user not found' });
+    const user = r2.rows[0];
     if (user.reset_pending) return res.status(403).json({ error: 'Password reset pending. Check your email.' });
-    if (!await bcrypt.compare(password, user.password)) return res.status(401).json({ error: 'Invalid credentials' });
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) return res.status(401).json({ error: 'Invalid credentials', debug: 'password mismatch', pwdLen: user.password.length });
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
     res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role, avatar_url: user.avatar_url } });
   } catch (e) { res.status(500).json({ error: e.message }); }
