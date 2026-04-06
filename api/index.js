@@ -38,6 +38,15 @@ const r = express.Router();
 app.use('/api', r);
 app.use('/', r);
 
+r.get('/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ db: 'connected', jwt: !!process.env.JWT_SECRET, dbUrl: !!process.env.DATABASE_URL });
+  } catch (e) {
+    res.json({ db: 'failed', error: e.message, jwt: !!process.env.JWT_SECRET, dbUrl: !!process.env.DATABASE_URL });
+  }
+});
+
 // ── AUTH ──────────────────────────────────────────────────────────────────────
 r.post('/auth/register', async (req, res) => {
   const { username, email, password, role } = req.body;
