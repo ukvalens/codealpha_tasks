@@ -2,15 +2,13 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const BASE_URL = 'http://localhost:5000';
-
 const CustomerTopbar = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef();
   const navigate = useNavigate();
   const initials = user?.username?.slice(0, 2).toUpperCase() || 'C';
-  const avatarSrc = user?.avatar_url ? `${BASE_URL}${user.avatar_url}` : null;
+  const avatarSrc = user?.avatar_url?.startsWith('data:') ? user.avatar_url : null;
 
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };

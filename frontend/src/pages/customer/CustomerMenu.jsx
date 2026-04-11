@@ -119,9 +119,9 @@ const CustomerMenu = () => {
                 </div>
                 <div className="btn-group mt-1">
                   {item.image_url && (
-                    <button className="btn-secondary btn-sm" onClick={() => setViewImage(item.image_url)}>🖼 View Image</button>
+                    <button className="btn-secondary btn-sm" style={{ flexShrink: 0 }} onClick={() => setViewImage(item.image_url)}>🖼 View Image</button>
                   )}
-                  <button className="btn-primary btn-sm" style={{ flex: 1 }} onClick={() => addToCart(item)}>+ Add to Cart</button>
+                  <button className="btn-primary btn-sm" style={{ flex: 1, minWidth: 0 }} onClick={() => addToCart(item)}>+ Add to Cart</button>
                 </div>
               </div>
             </div>

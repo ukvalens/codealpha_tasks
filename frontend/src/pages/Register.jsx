@@ -32,7 +32,12 @@ const Register = () => {
     if (Object.keys(e2).length) { setErrors(e2); return; }
     setLoading(true);
     try {
-      await api.post('/auth/register', form);
+      await api.post('/auth/register', {
+        ...form,
+        email: form.email.trim().toLowerCase(),
+        username: form.username.trim(),
+        password: form.password.trim()
+      });
       toast.success('Account created! Please login.');
       navigate('/login');
     } catch (err) {
