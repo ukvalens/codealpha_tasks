@@ -51,24 +51,53 @@ r.get('/health', async (req, res) => {
 r.post('/auth/register', async (req, res) => {
   const { username, email, password, role } = req.body;
   try {
-    const hashed = await bcrypt.hash(password, 10);
+    const normalizedEmail = email?.trim().toLowerCase();
+    const normalizedPassword = password?.trim();
+    const normalizedUsername = username?.trim();
+    
+    if (!normalizedEmail || !normalizedPassword || !normalizedUsername || !role) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    
+    if (!normalizedEmail.includes('@')) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+    
+    if (normalizedPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+    
+    const hashed = await bcrypt.hash(normalizedPassword, 10);
     const r = await pool.query(
       'INSERT INTO users (username, email, password, role) VALUES ($1,$2,$3,$4) RETURNING id,username,email,role',
-      [username, email, hashed, role]
+      [normalizedUsername, normalizedEmail, hashed, role]
     );
     res.status(201).json(r.rows[0]);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { 
+    if (e.message.includes('duplicate key')) {
+      res.status(409).json({ error: 'Email already registered' });
+    } else {
+      res.status(500).json({ error: e.message });
+    }
+  }
 });
 
 r.post('/auth/login', async (req, res) => {
   const { email, password } = req.body;
   try {
-    const r2 = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
-    if (!r2.rows.length) return res.status(401).json({ error: 'Invalid credentials', debug: 'user not found' });
+    const normalizedEmail = email?.trim().toLowerCase();
+    const normalizedPassword = password?.trim();
+    
+    if (!normalizedEmail || !normalizedPassword) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    
+    const r2 = await pool.query('SELECT * FROM users WHERE LOWER(email)=$1', [normalizedEmail]);
+    if (!r2.rows.length) return res.status(401).json({ error: 'Invalid credentials' });
     const user = r2.rows[0];
     if (user.reset_pending) return res.status(403).json({ error: 'Password reset pending. Check your email.' });
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ error: 'Invalid credentials', debug: 'password mismatch', pwdLen: user.password.length });
+    const valid = await bcrypt.compare(normalizedPassword, user.password);
+    if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
     res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role, avatar_url: user.avatar_url } });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -114,6 +143,13 @@ r.put('/auth/change-password', authMiddleware, async (req, res) => {
     const hashed = await bcrypt.hash(newPassword, 10);
     await pool.query('UPDATE users SET password=$1 WHERE id=$2', [hashed, req.user.id]);
     res.json({ message: 'Password changed successfully' });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+r.post('/auth/avatar/remove', authMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query('UPDATE users SET avatar_url=NULL WHERE id=$1 RETURNING id,username,email,role,avatar_url', [req.user.id]);
+    res.json(result.rows[0]);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 

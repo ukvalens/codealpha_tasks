@@ -3,8 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
-const isBase64 = (url) => url?.startsWith('data:');
-
 const Profile = () => {
   const { user, updateUser } = useAuth();
   const [form, setForm] = useState({ username: user?.username || '', email: user?.email || '' });
@@ -61,24 +59,29 @@ const Profile = () => {
 
         {/* Picture */}
         <div className="profile-pic-section">
-          <div className="profile-pic-wrapper">
+          <div className="profile-pic-wrapper" style={{ cursor: 'pointer', position: 'relative' }} onClick={() => fileRef.current.click()}>
             {preview
               ? <img src={preview} alt="profile" className="profile-pic" />
               : <div className="profile-pic-placeholder">👤</div>
             }
+            <div style={{ position: 'absolute', bottom: 0, right: 0, background: 'var(--primary)', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: 'white' }}>✏️</div>
           </div>
           <div>
             <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{user?.username}</p>
             <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
-            <button className="btn-secondary btn-sm" onClick={() => fileRef.current.click()}>
-              📁 Choose Photo
-            </button>
+            <button className="btn-secondary btn-sm" onClick={() => fileRef.current.click()}>📁 Choose Photo</button>
             {file && (
               <button className="btn-primary btn-sm" style={{ marginLeft: '0.5rem' }} onClick={handleUpload} disabled={uploading}>
                 {uploading ? 'Uploading...' : '⬆ Upload'}
               </button>
             )}
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>JPG, PNG · Max 2MB</p>
+            {preview && !file && (
+              <button className="btn-sm" style={{ marginLeft: '0.5rem', background: 'var(--danger)', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', padding: '0.3rem 0.6rem' }}
+                onClick={async () => { await api.post('/auth/avatar/remove').catch(() => {}); updateUser({ avatar_url: null }); setPreview(null); }}>
+                🗑 Remove
+              </button>
+            )}
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>Click photo to change · JPG, PNG · Max 2MB</p>
           </div>
         </div>
 

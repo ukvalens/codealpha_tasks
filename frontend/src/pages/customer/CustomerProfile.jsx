@@ -3,14 +3,14 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
 
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = '';
 
 const CustomerProfile = () => {
   const { user, updateUser } = useAuth();
   const [form, setForm] = useState({ username: user?.username || '', email: user?.email || '' });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState(user?.avatar_url ? `${BASE_URL}${user.avatar_url}` : null);
+  const [preview, setPreview] = useState(user?.avatar_url || null);
   const [file, setFile] = useState(null);
   const fileRef = useRef();
 
@@ -30,7 +30,7 @@ const CustomerProfile = () => {
     try {
       const res = await api.post('/auth/avatar', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       updateUser({ avatar_url: res.data.avatar_url });
-      setPreview(`${BASE_URL}${res.data.avatar_url}?t=${Date.now()}`);
+      setPreview(res.data.avatar_url);
       setFile(null);
       fileRef.current.value = '';
       toast.success('Profile picture updated!');
