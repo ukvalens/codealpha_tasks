@@ -3,8 +3,6 @@ import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const BASE_URL = 'http://localhost:5000';
-
 const CustomerMenu = () => {
   const { user } = useAuth();
   const [categories, setCategories] = useState([]);
@@ -121,7 +119,7 @@ const CustomerMenu = () => {
                 </div>
                 <div className="btn-group mt-1">
                   {item.image_url && (
-                    <button className="btn-secondary btn-sm" onClick={() => setViewImage(`${BASE_URL}${item.image_url}`)}>🖼 View Image</button>
+                    <button className="btn-secondary btn-sm" onClick={() => setViewImage(item.image_url)}>🖼 View Image</button>
                   )}
                   <button className="btn-primary btn-sm" style={{ flex: 1 }} onClick={() => addToCart(item)}>+ Add to Cart</button>
                 </div>

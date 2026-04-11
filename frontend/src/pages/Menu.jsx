@@ -3,8 +3,6 @@ import api from '../api/axios';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
-const BASE_URL = 'http://localhost:5000';
-
 const Menu = () => {
   const [categories, setCategories] = useState([]);
   const [items, setItems] = useState([]);
@@ -190,7 +188,7 @@ const Menu = () => {
                   </span>
                 </div>
               {item.image_url && (
-                  <button className="btn-secondary btn-sm" onClick={() => setViewImage(`${BASE_URL}${item.image_url}`)}>🖼 View Image</button>
+                  <button className="btn-secondary btn-sm" onClick={() => setViewImage(item.image_url)}>🖼 View Image</button>
                 )}
                 {canManage && (
                   <div className="btn-group mt-1">
