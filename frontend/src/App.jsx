@@ -13,6 +13,7 @@ import Menu from './pages/Menu';
 import Orders from './pages/Orders';
 import Reservations from './pages/Reservations';
 import Payments from './pages/Payments';
+import Users from './pages/Users';
 import Settings from './pages/Settings';
 import Profile from './pages/Profile';
 import ChangePassword from './pages/ChangePassword';
@@ -49,6 +50,7 @@ function App() {
             <Route path="orders" element={<Orders />} />
             <Route path="reservations" element={<Reservations />} />
             <Route path="payments" element={<ProtectedRoute roles={['admin', 'manager']}><Payments /></ProtectedRoute>} />
+            <Route path="users" element={<ProtectedRoute roles={['admin']}><Users /></ProtectedRoute>} />
             <Route path="profile" element={<Profile />} />
             <Route path="change-password" element={<ChangePassword />} />
             <Route path="settings" element={<ProtectedRoute roles={['admin']}><Settings /></ProtectedRoute>} />

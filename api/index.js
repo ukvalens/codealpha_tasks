@@ -5,8 +5,16 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const { Pool } = require('pg');
 require('dotenv').config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const app = express();
 const pool = new Pool({
@@ -20,7 +28,25 @@ const pool = new Pool({
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } });
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'restaurant-management/avatars',
+    format: async (req, file) => 'png',
+    public_id: (req, file) => `avatar_${req.user?.id || 'guest'}_${Date.now()}`,
+    resource_type: 'auto',
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|webp/;
+    const ext = file.originalname.split('.').pop().toLowerCase();
+    cb(null, allowed.test(ext));
+  },
+});
 
 // Auth middleware
 const authMiddleware = (req, res, next) => {
@@ -92,7 +118,7 @@ r.post('/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
     
-    const r2 = await pool.query('SELECT * FROM users WHERE LOWER(email)=$1', [normalizedEmail]);
+    const r2 = await pool.query('SELECT * FROM users WHERE email = $1 OR LOWER(email) = $1', [normalizedEmail]);
     if (!r2.rows.length) return res.status(401).json({ error: 'Invalid credentials' });
     const user = r2.rows[0];
     if (user.reset_pending) return res.status(403).json({ error: 'Password reset pending. Check your email.' });
@@ -156,8 +182,8 @@ r.post('/auth/avatar/remove', authMiddleware, async (req, res) => {
 r.post('/auth/avatar', authMiddleware, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    const r = await pool.query('UPDATE users SET avatar_url=$1 WHERE id=$2 RETURNING id,username,email,role,avatar_url', [base64, req.user.id]);
+    const avatarUrl = req.file.path;
+    const r = await pool.query('UPDATE users SET avatar_url=$1 WHERE id=$2 RETURNING id,username,email,role,avatar_url', [avatarUrl, req.user.id]);
     res.json(r.rows[0]);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -191,6 +217,19 @@ r.delete('/auth/users/:id', authMiddleware, roleCheck('admin'), async (req, res)
     if (+req.params.id === req.user.id) return res.status(400).json({ error: 'Cannot delete your own account' });
     await pool.query('DELETE FROM users WHERE id=$1', [req.params.id]);
     res.json({ message: 'User deleted' });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+r.post('/auth/reset-user-password', authMiddleware, roleCheck('admin'), async (req, res) => {
+  const { userId, newPassword } = req.body;
+  try {
+    if (!userId || !newPassword) return res.status(400).json({ error: 'User ID and new password are required' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    if (+userId === req.user.id) return res.status(400).json({ error: 'Cannot reset your own password this way' });
+    const hashed = await bcrypt.hash(newPassword, 10);
+    const r = await pool.query('UPDATE users SET password=$1 WHERE id=$2 RETURNING id,username,email,role', [hashed, userId]);
+    if (!r.rows.length) return res.status(404).json({ error: 'User not found' });
+    res.json({ message: 'Password reset successfully', user: r.rows[0] });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
